@@ -149,7 +149,191 @@
                     <main>
                         <h1><a class="header" href="#introduction" id="introduction">Introduction</a></h1>
 <p>Placeholder for the Silicon language specification.</p>
-<h1><a class="header" href="#basic-types" id="basic-types">Basic Types</a></h1>
+<h1><a class="header" href="#silicon-language-specification" id="silicon-language-specification">Silicon Language Specification</a></h1>
+<h2><a class="header" href="#syntax" id="syntax">Syntax</a></h2>
+<h3><a class="header" href="#comments" id="comments">Comments</a></h3>
+<ul>
+<li><code>//</code> Regular code comments</li>
+<li><code>///</code> Documentation comments</li>
+</ul>
+<h3><a class="header" href="#literals" id="literals">Literals</a></h3>
+<ul>
+<li><code>ddd</code> signed, unsized, integer literal</li>
+<li><code>No0...</code> sized, unsigned, octal literal</li>
+<li><code>Nb0...</code> sized, unsigned, binary literal</li>
+<li><code>Nx0...</code> sized, unsigned, hexadecimal literal</li>
+<li><code>true</code> | <code>false</code> (has type <code>Bit</code>)</li>
+</ul>
+<h2><a class="header" href="#types" id="types">Types</a></h2>
+<ul>
+<li><code>()</code>: Unit type</li>
+<li><code>Bit</code>: One bit primitive</li>
+<li><code>SInt&lt;N&gt;</code> and <code>UInt&lt;N&gt;</code>: Signed (two's complement) and unsigned integer representations with size N</li>
+<li><code>Int</code>: Unsized signed integer, does not map to hardware; can only be used to generate hardware</li>
+<li><code>[T; N]</code>: Array of type <code>T</code> of length <code>N</code></li>
+<li><code>struct</code>s and <code>enum</code>s: User defined types</li>
+<li><code>Type</code>: Denotes a type.</li>
+<li><code>(T1, ..., Tn)</code>: Denotes a tuple.</li>
+</ul>
+<h2><a class="header" href="#expressions" id="expressions">Expressions</a></h2>
+<h3><a class="header" href="#operators" id="operators">Operators</a></h3>
+<p>The following operators are available, in order of increasing precedence:</p>
+<ul>
+<li>unary <code>- ! &amp; | ^</code></li>
+<li><code>**</code></li>
+<li><code>* / %</code></li>
+<li><code>+ -</code></li>
+<li><code>&lt;&lt; &gt;&gt;</code></li>
+<li><code>&lt; &gt; &lt;= &gt;=</code></li>
+<li><code>== !=</code></li>
+<li><code>&amp;</code></li>
+<li><code>^</code></li>
+<li><code>|</code></li>
+</ul>
+<h4><a class="header" href="#negation-operators" id="negation-operators">Negation Operators</a></h4>
+<ul>
+<li><code>-</code>; <code>T -&gt; T</code>; <code>T in {SInt&lt;N&gt;, UInt&lt;N&gt;, Int}</code> - Negation (two's complement)</li>
+<li><code>!</code>; <code>T -&gt; T</code>; <code>T in {Bit, [Bit; N], SInt&lt;N&gt;, UInt&lt;N&gt;}</code> - Bitwise inversion (one's complement)</li>
+</ul>
+<h4><a class="header" href="#reduction-operators" id="reduction-operators">Reduction Operators</a></h4>
+<ul>
+<li><code>&amp; | ^</code>; <code>T -&gt; Bit</code>; <code>T in {Bit, [Bit; N], SInt&lt;N&gt;, UInt&lt;N&gt;}</code> - Reduction AND, OR, XOR</li>
+</ul>
+<h4><a class="header" href="#arithmetic-operators" id="arithmetic-operators">Arithmetic Operators</a></h4>
+<ul>
+<li><code>** * / % + -</code>; <code>(T, T) -&gt; T</code>; <code>T in {SInt&lt;N&gt;, UInt&lt;N&gt;, Int}</code> - Basic arithmetic</li>
+</ul>
+<h4><a class="header" href="#relational-operators" id="relational-operators">Relational Operators</a></h4>
+<ul>
+<li><code>== !=</code>; <code>(T, T) -&gt; Bit</code> - Equality operators</li>
+<li><code>&lt; &gt; &lt;= &gt;=</code>; <code>(T, T) -&gt; Bit</code>; <code>T in {Bit, [Bit; N], SInt&lt;N&gt;, UInt&lt;N&gt;, Int}</code> - Relational operators</li>
+</ul>
+<h4><a class="header" href="#shift-operators" id="shift-operators">Shift Operators</a></h4>
+<ul>
+<li><code>&lt;&lt; &gt;&gt;</code>; <code>(T, I) -&gt; T</code>; <code>T in {[Bit; N], SInt&lt;N&gt;, UInt&lt;N&gt;, Int}, I in {SInt&lt;N&gt;, UInt&lt;N&gt;, Int}</code> - Logical left and right shift</li>
+</ul>
+<h3><a class="header" href="#casts" id="casts">Casts</a></h3>
+<h3><a class="header" href="#packing--unpacking" id="packing--unpacking">Packing / Unpacking</a></h3>
+<h3><a class="header" href="#case--match" id="case--match">Case / Match</a></h3>
+<h2><a class="header" href="#hardware-generation" id="hardware-generation">Hardware Generation</a></h2>
+<h3><a class="header" href="#module-instatiation" id="module-instatiation">Module Instatiation</a></h3>
+<h3><a class="header" href="#function-calls" id="function-calls">Function Calls</a></h3>
+<pre><code>fn unpack&lt;R&gt;(ty: Type, x: [Bit; N]) -&gt; R where R = ty {
+    ...
+}
+
+let soup: [Bit; 64] = ...;
+unpack(SInt&lt;64&gt;, soup); -&gt; R?
+</code></pre>
+<p><code>foo(bar)</code>; <code>foo(SInt&lt;32&gt;, bar)</code></p>
+<h3><a class="header" href="#indexing-and-slicing" id="indexing-and-slicing">Indexing and Slicing</a></h3>
+<p><code>foo[bla]</code>; <code>foo[base; length]</code></p>
+<h3><a class="header" href="#member-accesses" id="member-accesses">Member Accesses</a></h3>
+<p><code>foo.bar</code></p>
+<h2><a class="header" href="#registers" id="registers">Registers</a></h2>
+<h2><a class="header" href="#modules" id="modules">Modules</a></h2>
+<p>Modules represent pieces of hardware with a clearly defined list of input and output signals.
+They can be parametric over types and constant values.
+Every statement and expression will eventually be unrolled and captured inside a module.
+Modules are defined as follows:</p>
+<pre><code>module Foo {
+    port clk: input Bit;
+    port master: input Axi, AxiAtop,...;
+    port slave: output Axi;
+    param Cfg: FooCfg;
+    port data_in: input SInt; // -&gt; implied parametricity over data_in.N
+    master.AW
+}
+</code></pre>
+<h2><a class="header" href="#structs" id="structs">Structs</a></h2>
+<p>Structs are declared as follows:</p>
+<pre><code>struct ReadyValid {
+    ready: Bit,
+    valid: Bit,
+}
+</code></pre>
+<p>Structs can be parameterized as follows:</p>
+<pre><code>struct Decoupled {
+    param T: Type,
+    data: T,
+    ready: Bit,
+    valid: Bit,
+}
+
+let foo: Decoupled;
+foo.T = [Bit; 2];
+</code></pre>
+<p>Optionally a selection can be hoisted up next to the struct name for easier specializations.</p>
+<pre><code>struct Decoupled&lt;T&gt; {
+    param T: Type,
+    data: T,
+    ready: Bit,
+    valid: Bit,
+}
+
+let foo: Decoupled&lt;[Bit; 2]&gt;;
+</code></pre>
+<p>The type specialization is optional and can be omitted and the type parameter can be late bound.</p>
+<ul>
+<li>If the struct definition defines a parameter in its diamond operator it can be assigned by position.</li>
+<li>If there is no diamond involved, the parameter can be assigned by name when the struct is used.</li>
+</ul>
+<h2><a class="header" href="#traits" id="traits">Traits</a></h2>
+<p>Not in the first revision of the language.</p>
+<h2><a class="header" href="#packages" id="packages">Packages</a></h2>
+<p>Packages allow for functions, types, and modules to be grouped and organized. There are two ways to define a package:</p>
+<pre><code>package foo { /*...*/ }  // inline
+package bar; // external
+</code></pre>
+<p>The first declares an inline package <code>foo</code> with the content provided in curly braces.
+The second searches for a file <code>bar.si</code> or <code>bar/pkg.si</code>, compiles it, and exposes its content as package <code>bar</code>.
+The content of a package can be accessed by prefixing a name with the package's name and <code>::</code> (namespace operator).
+Packages may also be nested.
+For example:</p>
+<pre><code>package a {
+    struct A;
+    package b {
+        struct B;
+    }
+}
+
+// Exposes the following names:
+// a::A
+// a::b::B
+</code></pre>
+<p>Packages are used to structure larger designs into separate files.
+For example:</p>
+<pre><code>// foo.si
+struct A;
+
+// bar.si
+struct B;
+package quux;
+
+// quux.si
+struct C;
+
+// pkg.si
+package foo;
+package bar;
+
+// Exposes the following names in pkg.si:
+// foo::A
+// bar::B
+// bar::quux::C
+</code></pre>
+<h2><a class="header" href="#features" id="features">Features</a></h2>
+<ul>
+<li>Stable name generation</li>
+<li>Seamless ASIC toolflow integration</li>
+<li>Constraints in RTL</li>
+<li>Late param/port binding</li>
+<li>SystemVerilog black boxes</li>
+</ul>
+<h2><a class="header" href="#convetion" id="convetion">Convetion</a></h2>
+<ul>
+<li>Type and module names are CamelCased.</li>
+</ul>
 
                     </main>
 
@@ -172,21 +356,6 @@
 
         </div>
 
-        
-        <!-- Livereload script (if served using the cli tool) -->
-        <script type="text/javascript">
-            var socket = new WebSocket("ws://localhost:3001");
-            socket.onmessage = function (event) {
-                if (event.data === "reload") {
-                    socket.close();
-                    location.reload(true); // force reload from server (not from cache)
-                }
-            };
-
-            window.onbeforeunload = function() {
-                socket.close();
-            }
-        </script>
         
 
         
