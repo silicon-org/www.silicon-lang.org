@@ -1,0 +1,94 @@
+// Goals:
+//  - Linux capable
+//  - XLEN in {32, 64}
+//  - Dual-issue
+//  - 2 GHz target clock in 22 FDX for the 32 bit variant
+//  - Optional cache-coherence
+//  - Configurable, small, lightweight
+//  - < 50 kGE
+// Non-goals:
+//  - No second Ariane
+
+struct Config {
+    xlen: Int,
+    has_dcache: Bit,
+    type Addr = UInt<xlen>;
+    type Inst = [Bit; 32];
+}
+
+// AXI-style handshake, valid-then-ready
+struct Decoupled<T> {
+    param T: Type,
+    data: T,
+    valid: Bit,
+    ready: rev Bit,
+}
+
+struct TileLinkUH<aw, bw, z> {
+    param aw: Int,
+    param bw: Int,
+    param zw: Int,
+    param iw: Int,
+    param ow: Int,
+
+    a: Decoupled<ChanA<aw, bw>>,
+    b: rev Decoupled<ChanB>;
+    c: Decoupled<ChanC>;
+    d: rev Decoupled<ChanD>;
+    e: Decoupled<ChanE>;
+
+    struct ChanA<aw, bw> {
+        param aw: Int,
+        param bw: Int,
+        param zw: Int,
+        param ow: Int,
+
+        opcode: [Bit; 3],
+        param: [Bit; 3],
+        size: [Bit; zw],
+        source: [Bit; ow],
+        address: [Bit; aw],
+        mask: [Bit; bw],
+        data: [Bit; 8*bw],
+    }
+    // ...
+}
+
+pub module Quaffle {
+    param cfg: Config;
+    port data: out TileLinkUH;
+    // port data: cfg.has_dcache ? TileLinkC : TileLinkUH;
+
+    let frontend = Frontend { cfg: cfg };
+    let backend = Backend { cfg }; // same as above, except for being the backend
+    data = frontend.if;
+    backend.io = frontend.io;
+}
+
+struct FrontendInterface<cfg> {
+    param cfg: Config;
+
+    inst: [Decoupled<(cfg.Addr, cfg.Inst)>; 2],
+    redirect: rev Decoupled<cfg.Addr>,
+    // TODO: Add branch-prediction interface
+}
+
+module Frontend {
+    param cfg: Config;
+    port if: out TileLinkUH;
+    port io: out FrontendInterface<cfg>;
+
+    reg pc: cfg.Addr;
+
+    pc.d = pc.q + 4;
+    if redirect.valid {
+        pc.d = redirect.data;
+        redirect.ready = 1;
+    }
+
+}
+
+module Backend {
+    param cfg: Config;
+    port io: in FrontendInterface<cfg>;
+}
